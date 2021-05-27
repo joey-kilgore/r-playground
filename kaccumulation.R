@@ -50,6 +50,9 @@ source("UsefulFunctions.R")
 ko <- csvToDF(read.csv("C:/Users/Joey/Desktop/TestData/kaccumulation/CathodicDC/1xBT/KO.csv"))
 v <- csvToDF(read.csv("C:/Users/Joey/Desktop/TestData/kaccumulation/CathodicDC/1xBT/Voltage.csv"))
 
+ko <- csvToDF(read.csv("L:/Work/data/Carryover/trials/1_5xBT_1500ms/KO.csv"))
+v <- csvToDF(read.csv("L:/Work/data/Carryover/trials/1_5xBT_1500ms/Voltage.csv"))
+
 # check data set
 head(ko)
 plot(ko$Time, ko$Node548)
@@ -149,8 +152,9 @@ v90 <- ggplot()+
 vAll <- grid.arrange(v10,v51,v90, layout_matrix=cbind(c(1,2,3),c(1,2,3),c(1,2,3)))
 ggsave("C:/Users/Joey/Desktop/TestData/kaccumulation/CathodicDC/plots/voltage1xBT.jpg", vAll, width=10, height=8)
 
-
+# ----------------------------------
 # large rainow of values across time
+# ----------------------------------
 psRainbow <- ggplot()+
   geom_path(aes(x=ko$Time,y=ko[,calcCol("PS",89)]),color="orange")+
   geom_path(aes(x=ko$Time,y=ko[,calcCol("PS",91)]),color="#ffa3f1")+
@@ -184,8 +188,9 @@ gridRainbow <- grid.arrange(psRainbow,vRainbow, ncol=1)
 
 ggsave("C:/Users/Joey/Desktop/TestData/kaccumulation/CathodicDC/plots/PSVoltageCarryover.jpg", gridRainbow, width=12, height=8)
 
-
+# -------------------------------------------------
 # compare node voltage to PS potassium accumulation
+# -------------------------------------------------
 plot(ko[,calcCol("PS",100)],v$Node51)
 
 kNew <- ko[ko[,1]<550,]
@@ -206,11 +211,70 @@ vAndK <- ggplot()+
   xlab("K Accumulation (mM)")+
   ylab("Voltage (mV)")
 
+vAndK <- ggplot()+
+  geom_path(aes(x=ko[,calcCol("PS",89)],y=vNew$Node45),color="orange")+
+  geom_path(aes(x=ko[,calcCol("PS",91)],y=vNew$Node46),color="#ffa3f1")+
+  geom_path(aes(x=ko[,calcCol("PS",93)],y=vNew$Node47),color="red")+
+  geom_path(aes(x=ko[,calcCol("PS",95)],y=vNew$Node48),color="purple")+
+  geom_path(aes(x=ko[,calcCol("PS",97)],y=vNew$Node49),color="blue")+
+  geom_path(aes(x=ko[,calcCol("PS",99)],y=vNew$Node50),color="cyan")+
+  geom_path(aes(x=ko[,calcCol("PS",101)],y=vNew$Node51),color="green")+
+  geom_path(aes(x=ko[,calcCol("PS",151)],y=vNew$Node75),color="black")+
+  xlab("K Accumulation (mM)")+
+  ylab("Voltage (mV)")
+
 ggsave("C:/Users/Joey/Desktop/TestData/kaccumulation/CathodicDC/plots/VandPSBlock.jpg", vAndK, width=12, height=8)
 
+# ------------------------------------
+# saving voltage profile to make a gif
+# ------------------------------------
+x <- seq(2,102)
+xZoom <- seq(47,57)
+kx <- seq(2,1111)
+kxZoom <- seq(502,612)
+vNew <- v[,x]
+vZoom <- v[,xZoom]
+kNew <- ko[,kx]
+kZoom <- ko[,kxZoom]
+timeStep <- 1100
+for(timeStep in seq(200,18000,by=10)){ #max 18000
+    vPlot <- ggplot()+geom_path(aes(x=x-2, y=unname(unlist(vNew[timeStep,]))))+
+      geom_point(aes(x=x-2, y=unname(unlist(vNew[timeStep,]))))+
+      xlab("Node")+
+      ylab("Voltage (mV)")+
+      ylim(-80,40)+
+      ggtitle(sprintf("%4.4f",v[timeStep,1]))
+    
+    vZoomPlot <- ggplot()+geom_path(aes(x=xZoom-2, y=unname(unlist(vZoom[timeStep,]))))+
+      geom_point(aes(x=xZoom-2, y=unname(unlist(vZoom[timeStep,]))))+
+      xlab("Node")+
+      ylab("Voltage (mV)")+
+      xlim(45,55)+
+      ylim(-80,40)+
+      ggtitle(sprintf("%4.4f",v[timeStep,1]))
+    
+    kPlot <- ggplot()+geom_path(aes(x=(kx-7)/11, y=unname(unlist(kNew[timeStep,]))))+
+      xlab("Node")+
+      ylab("K (mM)")+
+      ylim(0,30)
+    
+    kZoomPlot <- ggplot()+geom_path(aes(x=(kxZoom-7)/11, y=unname(unlist(kZoom[timeStep,]))))+
+      geom_point(aes(x=(kxZoom-7)/11, y=unname(unlist(kZoom[timeStep,]))))+
+      xlab("Node")+
+      ylab("K (mM)")+
+      xlim(45,55)+
+      ylim(0,30)
+    
+    combinedPlot <- grid.arrange(vPlot,vZoomPlot,kPlot,kZoomPlot,ncol=2)
+    
+    ggsave(paste("C:/Users/Joey Kilgore/Desktop/outputGraphs/",sprintf("%05d",timeStep),".png", sep=""),combinedPlot,width=16,height=10)
+}
 
+
+
+# ---------------------------------------------------------------
 # looking at pulse trains with 3.0mM potassium bath or 3.3mM bath
-
+# ---------------------------------------------------------------
 train30 <- csvToDF(read.csv("C:/Users/Joey/Desktop/TestData/kaccumulation/APTrain/K_3_0mM/KO.csv"))
 train30v <- csvToDF(read.csv("C:/Users/Joey/Desktop/TestData/kaccumulation/APTrain/K_3_0mM/Voltage.csv"))
 train33 <- csvToDF(read.csv("C:/Users/Joey/Desktop/TestData/kaccumulation/APTrain/K_3_3mM/KO.csv"))
@@ -240,8 +304,9 @@ trains <- grid.arrange(p,v,ncol=1, top=textGrob("Pulse Trains and Potassium Accu
 
 ggsave("C:/Users/Joey/Desktop/TestData/kaccumulation/CathodicDC/plots/PulseTrains.jpg", trains, width=10, height=5)
 
-
+# ------------------
 # longitudinal plots
+# ------------------
 length(ko[1,])
 xPos <- seq(from=2,to=1111,by=1)
 length(xPos)
@@ -272,7 +337,9 @@ for(timeStep in seq(from=8950,to=9100,by=10)){
   ggsave(paste("./kaccumulation/",sprintf("%05d",timeStep),".png", sep=""),longCombined,width=16,height=10)
 }
 
+# -------------------------------
 # looking at PS voltage over time
+# -------------------------------
 ko30 <- csvToDF(read.csv("C:/Users/Joey/Desktop/TestData/kaccumulation/APTrain/K_3_0mM/KO.csv"))
 ps30 <- csvToDF(read.csv("C:/Users/Joey/Desktop/TestData/kaccumulation/APTrain/K_3_0mM/FLUT.csv"))
 s <- 0.2

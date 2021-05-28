@@ -50,8 +50,8 @@ source("UsefulFunctions.R")
 ko <- csvToDF(read.csv("C:/Users/Joey/Desktop/TestData/kaccumulation/CathodicDC/1xBT/KO.csv"))
 v <- csvToDF(read.csv("C:/Users/Joey/Desktop/TestData/kaccumulation/CathodicDC/1xBT/Voltage.csv"))
 
-ko <- csvToDF(read.csv("L:/Work/data/Carryover/trials/1_5xBT_1500ms/KO.csv"))
-v <- csvToDF(read.csv("L:/Work/data/Carryover/trials/1_5xBT_1500ms/Voltage.csv"))
+ko1x <- csvToDF(read.csv("L:/Work/data/Carryover/trials/1xBT_1500ms/KO.csv"))
+v1x <- csvToDF(read.csv("L:/Work/data/Carryover/trials/1xBT_1500ms/Voltage.csv"))
 
 # check data set
 head(ko)
@@ -61,7 +61,10 @@ plot(ko$Time, ko$Node548)
 library(ggplot2)
 library(grid)
 library(gridExtra)
-
+library(RColorBrewer)
+# -------------------------------------------------------
+# Potassium accumulation for set of adjacent compartments
+# -------------------------------------------------------
 print(calcCol("Node",10))
 ggplot(data=ko)+
   geom_path(aes(x=Time,y=ko[,227]),color="green")+
@@ -86,8 +89,9 @@ ggplot(data=ko)+
   geom_path(aes(x=Time,y=ko[,994]),color="purple")+
   geom_path(aes(x=Time,y=ko[,993]),color="red")
 
-
+# -----------------------------
 # looking at MS and PS segments
+# -----------------------------
 calcCol("Node",10)
 calcCol("PS",20)
 calcCol("MS",20)
@@ -133,7 +137,9 @@ lay <- cbind(c(3,4,5),
 p <- grid.arrange(pm1,pm2,pm3,ps1,ms1,layout_matrix=lay)
 ggsave("C:/Users/Joey/Desktop/TestData/kaccumulation/CathodicDC/plots/psms1xBT.jpg", p, width=10, height=8)
 
+# -------------------
 # Basic Voltage plots
+# -------------------
 v10 <- ggplot()+
     geom_path(aes(x=v$Time,y=v$Node10))+
     xlab("")+
@@ -269,9 +275,150 @@ for(timeStep in seq(200,18000,by=10)){ #max 18000
     
     ggsave(paste("C:/Users/Joey Kilgore/Desktop/outputGraphs/",sprintf("%05d",timeStep),".png", sep=""),combinedPlot,width=16,height=10)
 }
+# ------------------------------------
+# Comparing two DC Carryvover profiles
+# ------------------------------------
+ko1x <- csvToDF(read.csv("L:/Work/data/Carryover/trials/1xBT_1500ms/KO.csv"))
+v1x <- csvToDF(read.csv("L:/Work/data/Carryover/trials/1xBT_1500ms/Voltage.csv"))
+x <- seq(2,102)
+kx <- seq(2,1111)
+v1 <- v1x[,x]
+v2 <- v15x[,x]
+k1 <- ko1x[,kx]
+k2 <- ko15x[,kx]
+timeStep <- 1100
+for(timeStep in seq(200,18000,by=10)){ #max 18000
+  vPlot1 <- ggplot()+geom_path(aes(x=x-2, y=unname(unlist(v1[timeStep,]))))+
+    geom_point(aes(x=x-2, y=unname(unlist(v1[timeStep,]))))+
+    xlab("Node")+
+    ylab("Voltage (mV)")+
+    ylim(-80,40)+
+    ggtitle(sprintf("%4.4f 1xBT 1500ms",v[timeStep,1]))
+  
+  vPlot2 <- ggplot()+geom_path(aes(x=x-2, y=unname(unlist(v2[timeStep,]))))+
+    geom_point(aes(x=x-2, y=unname(unlist(v2[timeStep,]))))+
+    xlab("Node")+
+    ylab("Voltage (mV)")+
+    ylim(-80,40)+
+    ggtitle(sprintf("%4.4f 1.5xBT 1500ms",v[timeStep,1]))
+  
+  kPlot1 <- ggplot()+geom_path(aes(x=(kx-7)/11, y=unname(unlist(k1[timeStep,]))))+
+    xlab("Node")+
+    ylab("K (mM)")+
+    ylim(0,30)
+  
+  kPlot2 <- ggplot()+geom_path(aes(x=(kx-7)/11, y=unname(unlist(k2[timeStep,]))))+
+    xlab("Node")+
+    ylab("K (mM)")+
+    ylim(0,30)
+  
+  combinedPlot <- grid.arrange(vPlot1,vPlot2,kPlot1,kPlot2,ncol=2)
+  
+  ggsave(paste("C:/Users/Joey Kilgore/Desktop/outputGraphs/",sprintf("%05d",timeStep),".png", sep=""),combinedPlot,width=16,height=10)
+}
+# -------------------------------------
+# Compare two trials voltages over time
+# -------------------------------------
+ggplot() + geom_path(aes(x=v1x$Time, y=v1x$Node51),color="#FF0000")+
+  geom_path(aes(x=v15x$Time, y=v15x$Node51),color="#0000FF")+
+  geom_path(aes(x=v1x$Time, y=v1x$Node21),color="#FF0000")+
+  geom_path(aes(x=v15x$Time, y=v15x$Node21),color="#0000FF")+
+  geom_path(aes(x=v1x$Time, y=v1x$Node81),color="#FF0000")+
+  geom_path(aes(x=v15x$Time, y=v15x$Node81),color="#0000FF")+
+  geom_hline(yintercept = -53, color = "black", linetype="dashed")+
+  xlim(1625,1725)+
+  xlab("Time (ms)")+
+  ylab("Voltage (mV)")+
+  ggtitle("Comparing 1xBT (RED) and 1.5xBT (BLUE) at nodes 20, 50, 80")
 
+# --------------------
+# sodium channel plots
+# --------------------
+all1xBT <- getDataAllDF("L:/Work/data/Carryover/trials/1xBT_1500ms/")
+all15xBT <- getDataAllDF("L:/Work/data/Carryover/trials/1_5xBT_1500ms/")
 
-
+timeStep <- 1660
+for(timeStep in seq(1501,1740,by=2)){ #max 18000
+  all1xBTtime <- all1xBT[all1xBT$Time>timeStep & all1xBT$Time<(timeStep+10),]
+  all15xBTtime <- all15xBT[all15xBT$Time>timeStep & all15xBT$Time<(timeStep+10),]
+  
+  mh201 <- ggplot()+geom_path(aes(x=all1xBTtime$M21, y=all1xBTtime$H21),size=1)+
+    geom_point(aes(x=all1xBTtime$M21, y=all1xBTtime$H21),size=1)+
+    xlim(0,1)+
+    ylim(0,1)+
+    xlab("M20")+
+    ylab("H20")
+  
+  mh451 <- ggplot()+geom_path(aes(x=all1xBTtime$M46, y=all1xBTtime$H46),size=1)+
+    geom_point(aes(x=all1xBTtime$M46, y=all1xBTtime$H46),size=1)+
+    xlim(0,1)+
+    ylim(0,1)+
+    xlab("M45")+
+    ylab("H45")
+  
+  mh501 <- ggplot()+geom_path(aes(x=all1xBTtime$M51, y=all1xBTtime$H51),size=1)+
+    geom_point(aes(x=all1xBTtime$M51, y=all1xBTtime$H51),size=1)+
+    xlim(0,1)+
+    ylim(0,1)+
+    xlab("M50")+
+    ylab("H50")
+  
+  mh551 <- ggplot()+geom_path(aes(x=all1xBTtime$M56, y=all1xBTtime$H56),size=1)+
+    geom_point(aes(x=all1xBTtime$M56, y=all1xBTtime$H56),size=1)+
+    xlim(0,1)+
+    ylim(0,1)+
+    xlab("M55")+
+    ylab("H55")
+  
+  mh801 <- ggplot()+geom_path(aes(x=all1xBTtime$M81, y=all1xBTtime$H81),size=1)+
+    geom_point(aes(x=all1xBTtime$M81, y=all1xBTtime$H81),size=1)+
+    xlim(0,1)+
+    ylim(0,1)+
+    xlab("M80")+
+    ylab("H80")
+  
+  # plots for second dataset (1.5xBT)
+  mh202 <- ggplot()+geom_path(aes(x=all15xBTtime$M21, y=all15xBTtime$H21),size=1)+
+    geom_point(aes(x=all15xBTtime$M21, y=all15xBTtime$H21),size=1)+
+    xlim(0,1)+
+    ylim(0,1)+
+    xlab("M20")+
+    ylab("H20")
+  
+  mh452 <- ggplot()+geom_path(aes(x=all15xBTtime$M46, y=all15xBTtime$H46),size=1)+
+    geom_point(aes(x=all15xBTtime$M46, y=all15xBTtime$H46),size=1)+
+    xlim(0,1)+
+    ylim(0,1)+
+    xlab("M45")+
+    ylab("H45")
+  
+  mh502 <- ggplot()+geom_path(aes(x=all15xBTtime$M51, y=all15xBTtime$H51),size=1)+
+    geom_point(aes(x=all15xBTtime$M51, y=all15xBTtime$H51),size=1)+
+    xlim(0,1)+
+    ylim(0,1)+
+    xlab("M50")+
+    ylab("H50")
+  
+  mh552 <- ggplot()+geom_path(aes(x=all15xBTtime$M56, y=all15xBTtime$H56),size=1)+
+    geom_point(aes(x=all15xBTtime$M56, y=all15xBTtime$H56),size=1)+
+    xlim(0,1)+
+    ylim(0,1)+
+    xlab("M55")+
+    ylab("H55")
+  
+  mh802 <- ggplot()+geom_path(aes(x=all15xBTtime$M81, y=all15xBTtime$H81),size=1)+
+    geom_point(aes(x=all15xBTtime$M81, y=all15xBTtime$H81),size=1)+
+    xlim(0,1)+
+    ylim(0,1)+
+    xlab("M80")+
+    ylab("H80")
+  
+  combinedPlot <- grid.arrange(mh201,mh451,mh501,mh551,mh801,
+                               mh202,mh452,mh502,mh552,mh802,ncol=5)
+  
+  
+  ggsave(paste("C:/Users/Joey Kilgore/Desktop/outputGraphs/",sprintf("%05d",timeStep),".png", sep=""),combinedPlot,width=16,height=10)
+}
 # ---------------------------------------------------------------
 # looking at pulse trains with 3.0mM potassium bath or 3.3mM bath
 # ---------------------------------------------------------------

@@ -50,9 +50,10 @@ source("UsefulFunctions.R")
 ko <- csvToDF(read.csv("C:/Users/Joey/Desktop/TestData/kaccumulation/CathodicDC/1xBT/KO.csv"))
 v <- csvToDF(read.csv("C:/Users/Joey/Desktop/TestData/kaccumulation/CathodicDC/1xBT/Voltage.csv"))
 
+ko15x <- csvToDF(read.csv("L:/Work/data/Carryover/trials/1_5xBT_1500ms/KO.csv"))
+v15x <- csvToDF(read.csv("L:/Work/data/Carryover/trials/1_5xBT_1500ms/Voltage.csv"))
 ko1x <- csvToDF(read.csv("L:/Work/data/Carryover/trials/1xBT_1500ms/KO.csv"))
 v1x <- csvToDF(read.csv("L:/Work/data/Carryover/trials/1xBT_1500ms/Voltage.csv"))
-
 # check data set
 head(ko)
 plot(ko$Time, ko$Node548)
@@ -62,6 +63,7 @@ library(ggplot2)
 library(grid)
 library(gridExtra)
 library(RColorBrewer)
+
 # -------------------------------------------------------
 # Potassium accumulation for set of adjacent compartments
 # -------------------------------------------------------
@@ -497,3 +499,26 @@ ggplot()+geom_line(aes(x=ko30$Time,y=ko30$Node554))+
     name="Potassium Concentration",
     sec.axis = sec_axis(~.+offset.*s,name="Voltage")
   )
+
+# -------------------------------------------------
+# Looking at all compartment potassium accumulation
+# -------------------------------------------------
+plots <- vector(mode = "list", length = 110)
+
+make_plots = function(index){
+  ggplot()+geom_path(aes(x=ko1x$Time, y=ko1x[,index+501]), color="#FF0000")+
+    geom_path(aes(x=ko15x$Time, y=ko15x[,index+501]), color="#0000FF")+
+    xlim(1500,1750)+
+    ylim(0,30)+
+    theme(axis.title.x=element_blank(),
+          axis.text.x=element_blank(),
+          axis.ticks.x=element_blank(),
+          axis.title.y=element_blank(),
+          axis.text.y=element_blank(),
+          axis.ticks.y=element_blank())
+}
+plots <- lapply(seq(1,110), make_plots)
+
+combinedPlot <- grid.arrange(grobs =plots,ncol=11)
+ggsave("C:/Users/Joey Kilgore/Desktop/outputGraphs/ko.png",combinedPlot,width = 40,height =36)
+

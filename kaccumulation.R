@@ -54,9 +54,11 @@ ko15x <- csvToDF(read.csv("L:/Work/data/Carryover/trials/1_5xBT_1500ms/KO.csv"))
 v15x <- csvToDF(read.csv("L:/Work/data/Carryover/trials/1_5xBT_1500ms/Voltage.csv"))
 ko1x <- csvToDF(read.csv("L:/Work/data/Carryover/trials/1xBT_1500ms/KO.csv"))
 v1x <- csvToDF(read.csv("L:/Work/data/Carryover/trials/1xBT_1500ms/Voltage.csv"))
+koInc <- csvToDF(read.csv("L:/Work/data/Carryover/trials/1xBT_1500ms_5K/KO.csv"))
+vInc <- csvToDF(read.csv("L:/Work/data/Carryover/trials/1xBT_1500ms_5K/Voltage.csv"))
 # check data set
-head(ko)
-plot(ko$Time, ko$Node548)
+head(koInc)
+plot(koInc$Time, koInc$Node548)
 
 # load graphing libraries
 library(ggplot2)
@@ -236,16 +238,18 @@ ggsave("C:/Users/Joey/Desktop/TestData/kaccumulation/CathodicDC/plots/VandPSBloc
 # ------------------------------------
 # saving voltage profile to make a gif
 # ------------------------------------
+v <- vInc
+k <- koInc
 x <- seq(2,102)
 xZoom <- seq(47,57)
 kx <- seq(2,1111)
 kxZoom <- seq(502,612)
 vNew <- v[,x]
 vZoom <- v[,xZoom]
-kNew <- ko[,kx]
-kZoom <- ko[,kxZoom]
-timeStep <- 1100
-for(timeStep in seq(200,18000,by=10)){ #max 18000
+kNew <- k[,kx]
+kZoom <- k[,kxZoom]
+timeStep <- 23500
+for(timeStep in seq(200,23500,by=10)){ #max 18000
     vPlot <- ggplot()+geom_path(aes(x=x-2, y=unname(unlist(vNew[timeStep,]))))+
       geom_point(aes(x=x-2, y=unname(unlist(vNew[timeStep,]))))+
       xlab("Node")+
@@ -285,24 +289,24 @@ v1x <- csvToDF(read.csv("L:/Work/data/Carryover/trials/1xBT_1500ms/Voltage.csv")
 x <- seq(2,102)
 kx <- seq(2,1111)
 v1 <- v1x[,x]
-v2 <- v15x[,x]
+v2 <- vInc[,x]
 k1 <- ko1x[,kx]
-k2 <- ko15x[,kx]
-timeStep <- 1100
-for(timeStep in seq(200,18000,by=10)){ #max 18000
+k2 <- koInc[,kx]
+timeStep <- 19990
+for(timeStep in seq(200,19990,by=10)){ #max 18000
   vPlot1 <- ggplot()+geom_path(aes(x=x-2, y=unname(unlist(v1[timeStep,]))))+
     geom_point(aes(x=x-2, y=unname(unlist(v1[timeStep,]))))+
     xlab("Node")+
     ylab("Voltage (mV)")+
     ylim(-80,40)+
-    ggtitle(sprintf("%4.4f 1xBT 1500ms",v[timeStep,1]))
+    ggtitle(sprintf("%4.4f 1xBT 1500ms",v1x[timeStep,1]))
   
   vPlot2 <- ggplot()+geom_path(aes(x=x-2, y=unname(unlist(v2[timeStep,]))))+
     geom_point(aes(x=x-2, y=unname(unlist(v2[timeStep,]))))+
     xlab("Node")+
     ylab("Voltage (mV)")+
     ylim(-80,40)+
-    ggtitle(sprintf("%4.4f 1.5xBT 1500ms",v[timeStep,1]))
+    ggtitle(sprintf("%4.4f 1xBT 1500ms 5%% K+ Increase",vInc[timeStep,1]))
   
   kPlot1 <- ggplot()+geom_path(aes(x=(kx-7)/11, y=unname(unlist(k1[timeStep,]))))+
     xlab("Node")+

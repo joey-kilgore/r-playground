@@ -6,9 +6,9 @@ library(vioplot)
 #----------------------------------
 # first we need to collect the data
 #----------------------------------
-sine <- getDataAllDF("C://Users//Joey//Desktop//Comparison Waveform Data new Complete//10kHz//SINE//")
-tri <- getDataAllDF("C://Users//Joey//Desktop//Comparison Waveform Data new Complete//10kHz//TRI//")
-squ <- getDataAllDF("C://Users//Joey//Desktop//Comparison Waveform Data new Complete//10kHz//SQU//")
+sine <- getDataAllDF("L://Work//Laptop_Desktop_5_28_2021//Comparison Waveform Data new Complete//10kHz//SINE//")
+tri <- getDataAllDF("L://Work//Laptop_Desktop_5_28_2021//Comparison Waveform Data new Complete//10kHz//TRI//")
+squ <- getDataAllDF("L://Work//Laptop_Desktop_5_28_2021//Comparison Waveform Data new Complete//10kHz//SQU//")
 sineAVG <- movingAverageDF(sine, 12)
 triAVG <- movingAverageDF(tri, 12)
 squAVG <- movingAverageDF(squ, 12)
@@ -217,7 +217,7 @@ ggplot()+geom_abline(color="red")+
 #-------------
 # Sample block
 #-------------
-sineSB <- getDataAllDF("C://Users//Joey//Desktop//Comparison Waveform Data new Complete//10kHzSampleBlock//SINE//")
+sineSB <- getDataAllDF("L://Work//Laptop_Desktop_5_28_2021//Comparison Waveform Data new Complete//10kHzSampleBlock//SINE//")
 sineNode0 <- ggplot(data=sineSB)+geom_line(aes(x=Time,y=V1))+ylim(-150,70)+
   theme(axis.title.x=element_blank(),
         axis.text.x=element_blank(),
@@ -241,7 +241,7 @@ sineNode100 <- ggplot(data=sineSB)+geom_line(aes(x=Time,y=V101))+ylim(-150,70)+
         axis.ticks.y=element_blank())
 grid.arrange(sineNode0,sineNode50,sineNode100, ncol=3)
 
-triSB <- getDataAllDF("C://Users//Joey//Desktop//Comparison Waveform Data new Complete//10kHzSampleBlock//TRI//")
+triSB <- getDataAllDF("L://Work//Laptop_Desktop_5_28_2021//Comparison Waveform Data new Complete//10kHzSampleBlock//TRI//")
 triNode0 <- ggplot(data=triSB)+geom_line(aes(x=Time,y=V1))+ylim(-150,70)+
   theme(axis.title.x=element_blank(),
         axis.text.x=element_blank(),
@@ -265,7 +265,7 @@ triNode100 <- ggplot(data=triSB)+geom_line(aes(x=Time,y=V101))+ylim(-150,70)+
         axis.ticks.y=element_blank())
 grid.arrange(triNode0,triNode50,triNode100, ncol=3)
 
-squSB <- getDataAllDF("C://Users//Joey//Desktop//Comparison Waveform Data new Complete//10kHzSampleBlock//SQU//")
+squSB <- getDataAllDF("L://Work//Laptop_Desktop_5_28_2021//Comparison Waveform Data new Complete//10kHzSampleBlock//SQU//")
 squNode0 <- ggplot(data=squSB)+geom_line(aes(x=Time,y=V1))+ylim(-150,70)+
   theme(axis.title.x=element_blank(),
         axis.text.x=element_blank(),
@@ -289,6 +289,45 @@ squNode100 <- ggplot(data=squSB)+geom_line(aes(x=Time,y=V101))+ylim(-150,70)+
         axis.ticks.y=element_blank())
 grid.arrange(squNode0,squNode50,squNode100, ncol=3)
 
-grid.arrange(triNode0,triNode50,triNode100,
+all_volt_plots <- grid.arrange(triNode0,triNode50,triNode100,
              sineNode0,sineNode50,sineNode100,
              squNode0,squNode50,squNode100, ncol=3)
+
+ggsave("L://Work//Manuscripts//Comparison Waveform Paper//simSetupFull//voltPlots.eps", all_volt_plots, height=12,width=16)
+
+# -----------------------
+# discrete waveform plots
+# -----------------------
+
+x <- seq(0,2*3.14, by=3.14/6)
+y <- sin(x)
+discrete_sine <- ggplot()+geom_point(aes(x=x,y=y),size=4)+geom_line(aes(x=x,y=y),size=1)+
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank())
+ggsave("L://Work//Manuscripts//Comparison Waveform Paper//simSetupFull//discrete_sine.eps", discrete_sine, height=4,width=8)
+
+x <- c(0,1,2,3,4,5,6,7,8,9,10,11,12,13)
+y <- c(-1,1,1,1,1,1,1,-1,-1,-1,-1,-1,-1,1)
+discrete_square <- ggplot()+geom_point(aes(x=x,y=y),size=4)+geom_line(aes(x=x,y=y),size=1)+
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank())
+ggsave("L://Work//Manuscripts//Comparison Waveform Paper//simSetupFull//discrete_square.eps", discrete_square, height=4,width=8)
+
+x <- c(0,1,2,3,4,5,6,7,8,9,10,11,12)
+y <- c(0,1,2,3,2,1,0,-1,-2,-3,-2,-1,0)
+discrete_tri <- ggplot()+geom_point(aes(x=x,y=y),size=4)+geom_line(aes(x=x,y=y),size=1)+
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank())
+ggsave("L://Work//Manuscripts//Comparison Waveform Paper//simSetupFull//discrete_tri.eps", discrete_tri, height=4,width=8)
